@@ -6,7 +6,7 @@ const getAllTask = async (page = 1, listPerPage = 10) => {
     const offset = helper.getOffset(page, listPerPage)
     const row = await db.query(`
       SELECT id, task_name, task_description, due_date 
-      FROM task_information LIMIT ${offset},${listPerPage}
+      FROM task_information task_infomation LIMIT ${offset},${listPerPage}
     `)
 
     const data = helper.emptyOrRows(row)
