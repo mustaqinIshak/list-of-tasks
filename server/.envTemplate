@@ -1,0 +1,8 @@
+# Database configuration
+DB_HOST=""
+DB_USERNAME=""
+DB_PASSWORD=""
+DB_DATABASE=""
+
+#Server configuration
+SERVER_PORT=3000
