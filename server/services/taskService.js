@@ -1,21 +1,30 @@
 const helper = require('../helpers/helpers')
 const db = require('../database/db')
 
-const getAllTask = async (page = 1, listPerPage = 10) => {
+const getAllTask = async (page = 1, listPerPage = 10, search) => {
   try {
     const offset = helper.getOffset(page, listPerPage)
-    const row = await db.query(`
-      SELECT * FROM task_information LIMIT ${offset},${listPerPage}
-    `)
-
+    console.log(offset)
+    let row = null
+    if(search) {
+      row = await db.query(`
+      SELECT * FROM task_information as a WHERE a.task_name LIKE "%${search}%" OR a.task_description LIKE "%${search}%" OR a.due_date LIKE "%${search}%"  
+      LIMIT ${offset},${listPerPage}
+      `)
+    } else {
+      console.log('masuk')
+      row = await db.query(`
+        SELECT * FROM task_information LIMIT ${offset}, ${listPerPage}
+      `)
+    }
     const data = helper.emptyOrRows(row)
     const meta = {page} 
     return {
       data,
       meta
     }
-  } catch(err) {
-    throw err
+  } catch(error) {
+    throw error
   }
 };
   
@@ -24,7 +33,13 @@ const getOneTask = async (taskId) => {
     const data = await db.query(`
       SELECT * FROM task_information WHERE id = ${taskId}
     `)
-
+    console.log(data)
+    if (data.length == 0) {
+      throw {
+        statusCode: 400,
+        message: "task not found"
+      };
+    }
     return {
       data
     }
@@ -32,43 +47,83 @@ const getOneTask = async (taskId) => {
     throw error
   }
 };
-
-const getSearchTask = async (key) => {
-  try {
-    const data = db.query(`
-      SELECT * FROM task_information WHERE task_name LIKE ${key} OR task_description LIKE ${key} OR due_date LIKE ${key}  
-    `)
-
-    return {
-      data
-    }
-  } catch (error) {
-    throw error
-  }
-}
 
 const createNewTask = async (payload) => {
   try {
-    const insertTask = db.query(`
-
+    const date = helper.dateTime();
+    const insertTask = await db.query(`
+      INSERT INTO task_information (task_name, task_description, due_date, created_at, updated_at)
+      VALUES ("${payload.name}", "${payload.description}", "${payload.dueDate}", "${date}", "${date}")
     `)
+
+    let message = 'Error in creating task';
+
+    if (insertTask.affectedRows) {
+      message = 'Task created successfully';
+      return message
+    } else {
+      throw {
+        statusCode: 500,
+        message
+      }
+    }
+
   } catch (error) {
     throw error
   }
 };
 
-const updateOneTask = (taskId, payload) => {
-  return;
+const updateOneTask = async (taskId, payload) => {
+  try {
+    const date = helper.dateTime();
+    const insertTask = await db.query(`
+      UPDATE task_information SET task_name = "${payload.name}", task_description = "${payload.description}", due_date = "${payload.dueDate}", updated_at = "${date}"
+      WHERE id = ${taskId}
+    `)
+
+    let message = 'Error in update task';
+
+    if (insertTask.affectedRows) {
+      message = 'Task update successfully';
+      return message
+    } else {
+      throw {
+        statusCode: 500,
+        message
+      }
+    }
+
+  } catch (error) {
+    throw error
+  }
 };
 
-const deleteOneTask = (taskId, payload) => {
-  return;
+const deleteOneTask = async (taskId) => {
+  try {
+    const insertTask = await db.query(`
+      DELETE FROM task_information WHERE id = ${taskId}
+    `)
+
+    let message = 'Error in delete task';
+
+    if (insertTask.affectedRows) {
+      message = 'Task delete successfully';
+      return message
+    } else {
+      throw {
+        statusCode: 500,
+        message
+      }
+    }
+
+  } catch (error) {
+    throw error
+  }
 };
 
 module.exports = {
   getAllTask,
   getOneTask,
-  getSearchTask,
   createNewTask,
   updateOneTask,
   deleteOneTask,

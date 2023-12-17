@@ -12,8 +12,17 @@ app.use("/api/v1/tasks", v1TaskRouter);
 /* Error handler middleware */
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
-    console.error(err.message, err.stack);
-    res.status(statusCode).json({ message: err.message });
+    console.error(err.message);
+    const arr = []
+    if(Array.isArray(err.message)) {
+      for(let i = 0; i < err.message.length; i++)
+      {
+        arr.push(err.message[i].msg) 
+      } 
+    } else {
+      arr.push(err.message)
+    }
+    res.status(statusCode).json({ message: arr });
     return;
   });
 
