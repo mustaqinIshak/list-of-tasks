@@ -132,14 +132,14 @@ const updateOneTask = async (req, res, next) => {
       description,
       dueDate
     }
-    const updateTask = taskService.updateOneTask(taskId, payload)
+    const updateTask = await taskService.updateOneTask(taskId, payload)
     res.json(updateTask)
   } catch (error) {
     return next(error) 
   }
 };
 
-const deleteOneTask = (req, res) => {
+const deleteOneTask = async (req, res, next) => {
   try {   
     const {taskId} = req.params
     if(!taskId) {
@@ -148,8 +148,8 @@ const deleteOneTask = (req, res) => {
        message: "taskId doesn't exist"
      };
    }
-    const deleteTask  = taskService.deleteOneTask(taskId)
-    res.send(deleteTask);
+    const deleteTask  = await taskService.deleteOneTask(taskId)
+    res.json(deleteTask);
   } catch (error) {
     return next(error) 
   }
